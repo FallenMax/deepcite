@@ -56,17 +56,28 @@ function ensureSidebarOpen(rootDoc) {
     } catch (e) {}
   }
 
-  // Try to click the "Sources and activity" button
+  // Try to click the sidebar toggle button.
+  // The aria-label is typically "Sources and activity" in English, but may be
+  // localized. We check aria-label and visible text for common variants.
+  const sidebarKeywords = [
+    'sources', 'source', 'citations', 'citation', 'activity',
+    // Chinese
+    '来源', '引用',
+    // Japanese
+    'ソース', '出典',
+    // Korean
+    '출처',
+  ];
   for (const doc of docs) {
     try {
       const allBtns = doc.querySelectorAll('button');
       for (const btn of allBtns) {
-        const ariaLabel = btn.getAttribute('aria-label') || '';
-        const text = btn.textContent?.trim() || '';
-        if (ariaLabel.includes('Sources') || ariaLabel.includes('source') ||
-            text.includes('Sources') || text.includes('source')) {
+        const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
+        const text = (btn.textContent?.trim() || '').toLowerCase();
+        const haystack = ariaLabel + ' ' + text;
+        if (sidebarKeywords.some(kw => haystack.includes(kw))) {
           btn.click();
-          return { status: 'clicked', target: text || ariaLabel };
+          return { status: 'clicked', target: btn.getAttribute('aria-label') || btn.textContent?.trim() };
         }
       }
     } catch (e) {}

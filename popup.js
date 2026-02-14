@@ -122,6 +122,56 @@ function extractCitationOrderFromContent() {
 
 
 // =========================================================================
+// Detect trailing "References" section (language-agnostic)
+// =========================================================================
+
+/**
+ * Detect a trailing "References" section in the markdown.
+ * Instead of matching specific language keywords like "参考资料" or "References",
+ * we look for a structural pattern: the last **bold heading** near the end of
+ * the document, where the section after it contains citation markers 【N†...】
+ * or [^N] footnotes and relatively little other content.
+ *
+ * @param {string} md - Markdown text
+ * @param {Array|null} markers - Pre-extracted markers array (optional; if null, re-scan)
+ * @returns {number} Start index of the references section, or -1 if not found
+ */
+function detectTrailingReferencesSection(md, markers) {
+  // Find all **bold headings** (on their own line or at start of a line)
+  const headingRegex = /\n\*\*[^*\n]+\*\*[：:\s]*/g;
+  const headings = [];
+  let m;
+  while ((m = headingRegex.exec(md)) !== null) {
+    headings.push({ index: m.index, match: m[0] });
+  }
+  if (headings.length === 0) return -1;
+
+  // Check from the last heading backwards
+  for (let h = headings.length - 1; h >= 0; h--) {
+    const sectionStart = headings[h].index;
+    const afterSection = md.substring(sectionStart);
+
+    // Count citation markers in this trailing section
+    const citationHits = (afterSection.match(/【\d+†[^】]*】/g) || []).length
+                       + (afterSection.match(/\[\^\d+\]/g) || []).length;
+
+    if (citationHits === 0) continue;
+
+    // Heuristic: this section should be in the last ~30% of the document
+    // and have a high density of citations relative to its length
+    const positionRatio = sectionStart / md.length;
+    const sectionTextLength = afterSection.replace(/【\d+†[^】]*】/g, '').replace(/\[\^\d+\]/g, '').trim().length;
+
+    if (positionRatio >= 0.7 && citationHits >= 2 && sectionTextLength < afterSection.length * 0.8) {
+      return sectionStart;
+    }
+  }
+
+  return -1;
+}
+
+
+// =========================================================================
 // Merge logic: replace 【N†...】 markers with [^K] using DOM position mapping
 // =========================================================================
 function mergeCitationsIntoMarkdown(officialMarkdown, citationMap, domCitationOrder) {
@@ -157,18 +207,15 @@ function mergeCitationsIntoMarkdown(officialMarkdown, citationMap, domCitationOr
     sidebarIndices = [...domCitationOrder];
     mappingMethod = 'position-exact';
   } else {
-    // Try matching main-body markers only (exclude References section)
-    const refPatterns = [/\*\*参考资料[：:]?\*\*/, /\*\*References[：:]?\*\*/];
-    for (const pat of refPatterns) {
-      if (sidebarIndices) break;
-      const refMatch = officialMarkdown.match(pat);
-      if (refMatch) {
-        const refStart = officialMarkdown.indexOf(refMatch[0]);
-        const mainBodyMarkers = markers.filter(m => m.start < refStart);
-        if (domCitationOrder.length === mainBodyMarkers.length) {
-          sidebarIndices = [...domCitationOrder];
-          mappingMethod = 'position-main-body';
-        }
+    // Try matching main-body markers only (exclude trailing "References" section).
+    // Language-agnostic: detect the last **bold heading** near the end of the
+    // document whose trailing section contains citation markers 【N†...】.
+    const refSectionStart = detectTrailingReferencesSection(officialMarkdown, markers);
+    if (refSectionStart !== -1) {
+      const mainBodyMarkers = markers.filter(m => m.start < refSectionStart);
+      if (domCitationOrder.length === mainBodyMarkers.length) {
+        sidebarIndices = [...domCitationOrder];
+        mappingMethod = 'position-main-body';
       }
     }
 
@@ -202,9 +249,11 @@ function mergeCitationsIntoMarkdown(officialMarkdown, citationMap, domCitationOr
     }
   }
 
-  // Step 4: Remove trailing "References" section (Chinese or English)
-  merged = merged.replace(/\n*\*\*参考资料[：:]?\*\*[\s\S]*$/, '');
-  merged = merged.replace(/\n*\*\*References[：:]?\*\*[\s\S]*$/, '');
+  // Step 4: Remove trailing "References" section (language-agnostic)
+  const refStart = detectTrailingReferencesSection(merged, null);
+  if (refStart !== -1) {
+    merged = merged.substring(0, refStart);
+  }
 
   // Step 5: Append footnote definitions
   merged = merged.trimEnd();
