@@ -31,7 +31,7 @@ HOW IT WORKS:
 1. Open a ChatGPT Deep Research report
 2. Expand the report and open the Sources sidebar
 3. Click ChatGPT's built-in Copy button
-4. Click DeepCite's "合并引用到剪贴板" button
+4. Click DeepCite's "Merge Citations to Clipboard" button
 5. Paste — your Markdown now has full citation footnotes!
 
 FEATURES:
@@ -43,8 +43,8 @@ FEATURES:
 • One-click operation after copying
 
 EXAMPLE:
-Before: 全球供应链管理软件市场约为257亿美元【57†L18-L22】
-After:   全球供应链管理软件市场约为257亿美元[^13]
+Before: The global supply chain software market is valued at approximately $25.7 billion【57†L18-L22】
+After:   The global supply chain software market is valued at approximately $25.7 billion[^13]
          ...
          [^13]: [Blue Yonder Revenue](https://www.example.com/...)
 
@@ -64,7 +64,7 @@ Productivity
 ### Language
 
 ```
-Chinese (Simplified) — with English documentation
+English
 ```
 
 ---
@@ -106,7 +106,7 @@ Chinese (Simplified) — with English documentation
 2. **Expand** the full report (click to reveal)
 3. Open the **Sources** sidebar (click "Sources" tab on the right)
 4. Click ChatGPT's built-in **Copy** button (below the report)
-5. Click the **DeepCite** extension icon → **"合并引用到剪贴板"**
+5. Click the **DeepCite** extension icon → **"Merge Citations to Clipboard"**
 6. Paste anywhere — your Markdown now includes full citation footnotes!
 
 ### Output Format

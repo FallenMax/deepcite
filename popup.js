@@ -241,68 +241,68 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusEl = document.getElementById('status');
   const statsEl = document.getElementById('stats');
 
-  const BTN_LABEL = '合并引用到剪贴板';
+  const BTN_LABEL = 'Merge Citations to Clipboard';
 
   copyBtn.addEventListener('click', async () => {
-    setButtonState(copyBtn, true, '处理中...');
+    setButtonState(copyBtn, true, 'Processing...');
     clearStatus();
 
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab) {
-        showError('找不到活动标签页。');
+        showError('No active tab found.');
         resetButton(copyBtn, BTN_LABEL);
         return;
       }
 
       // Step 1: Read clipboard (user should have already copied official markdown)
-      statusEl.textContent = '正在读取剪贴板...';
+      statusEl.textContent = 'Reading clipboard...';
       statusEl.className = 'info';
 
       let clipboardText;
       try {
         clipboardText = await navigator.clipboard.readText();
       } catch (clipErr) {
-        showError('无法读取剪贴板。请允许扩展访问剪贴板。');
+        showError('Cannot read clipboard. Please allow the extension to access the clipboard.');
         resetButton(copyBtn, BTN_LABEL);
         return;
       }
 
       if (!clipboardText || clipboardText.trim().length < 20) {
-        showError('剪贴板为空或内容太短。请先点击 ChatGPT 的 Copy 按钮复制报告。');
+        showError('Clipboard is empty or too short. Please click ChatGPT\'s Copy button first.');
         resetButton(copyBtn, BTN_LABEL);
         return;
       }
 
       if (!/【\d+†/.test(clipboardText)) {
-        showError('剪贴板中未找到引用标记（【N†...】）。请先点 ChatGPT 的 Copy 按钮复制 Deep Research 报告。');
+        showError('No citation markers (【N†...】) found in clipboard. Please copy a Deep Research report first via ChatGPT\'s Copy button.');
         resetButton(copyBtn, BTN_LABEL);
         return;
       }
 
       // Step 2: Extract citation sources + DOM order from page
-      statusEl.textContent = '正在提取引用源...';
+      statusEl.textContent = 'Extracting citation sources...';
       const citationMap = await extractCitationsFromPage(tab.id);
       const domCitationOrder = await extractCitationOrderFromPage(tab.id);
 
       if (!citationMap || Object.keys(citationMap).length === 0) {
-        showError('未找到引用源信息。请确认侧栏（Sources）已打开且 Citations 列表可见。');
+        showError('No citation sources found. Please make sure the Sources sidebar is open and citations are visible.');
         resetButton(copyBtn, BTN_LABEL);
         return;
       }
 
       if (!domCitationOrder) {
-        showError('无法从页面提取引用顺序。请确认报告内容已展开且可见。');
+        showError('Cannot extract citation order from the page. Please make sure the report is expanded and visible.');
         resetButton(copyBtn, BTN_LABEL);
         return;
       }
 
       // Step 3: Merge
-      statusEl.textContent = '正在合并引用...';
+      statusEl.textContent = 'Merging citations...';
       const result = mergeCitationsIntoMarkdown(clipboardText, citationMap, domCitationOrder);
 
       if (!result.markdown) {
-        showError(result.error || '合并失败。');
+        showError(result.error || 'Merge failed.');
         resetButton(copyBtn, BTN_LABEL);
         return;
       }
@@ -310,13 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // Step 4: Write merged markdown back to clipboard
       await navigator.clipboard.writeText(result.markdown);
 
-      statusEl.textContent = '✓ 引用已合并，已复制到剪贴板！';
+      statusEl.textContent = '✓ Citations merged & copied to clipboard!';
       statusEl.className = 'success';
-      copyBtn.textContent = '✓ 已完成';
+      copyBtn.textContent = '✓ Done';
 
       statsEl.innerHTML = `
-        <span>${result.charCount.toLocaleString()}</span> 字符 ·
-        <span>${result.resolvedCitations}</span>/<span>${result.totalCitations}</span> 引用已解析 ·
+        <span>${result.charCount.toLocaleString()}</span> chars ·
+        <span>${result.resolvedCitations}</span>/<span>${result.totalCitations}</span> citations resolved ·
         ${result.mappingMethod}
       `;
       statsEl.style.display = 'block';
@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Error:', err);
-      showError(`错误: ${err.message}`);
+      showError(`Error: ${err.message}`);
       resetButton(copyBtn, BTN_LABEL);
     }
   });
