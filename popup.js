@@ -157,7 +157,7 @@ function mergeCitationsIntoMarkdown(officialMarkdown, citationMap, domCitationOr
     sidebarIndices = [...domCitationOrder];
     mappingMethod = 'position-exact';
   } else {
-    // Try matching main-body markers only (exclude 参考资料 section)
+    // Try matching main-body markers only (exclude References section)
     const refPatterns = [/\*\*参考资料[：:]?\*\*/, /\*\*References[：:]?\*\*/];
     for (const pat of refPatterns) {
       if (sidebarIndices) break;
@@ -202,7 +202,7 @@ function mergeCitationsIntoMarkdown(officialMarkdown, citationMap, domCitationOr
     }
   }
 
-  // Step 4: Remove 参考资料 / References trailing section
+  // Step 4: Remove trailing "References" section (Chinese or English)
   merged = merged.replace(/\n*\*\*参考资料[：:]?\*\*[\s\S]*$/, '');
   merged = merged.replace(/\n*\*\*References[：:]?\*\*[\s\S]*$/, '');
 
