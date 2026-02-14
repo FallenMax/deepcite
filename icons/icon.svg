@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#12b886"/>
+      <stop offset="100%" stop-color="#0a7a5e"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect x="4" y="4" width="120" height="120" rx="24" ry="24" fill="url(#bg)"/>
+  
+  <!-- Document body (white, with folded corner) -->
+  <path d="M38 22 L82 22 L98 38 L98 106 L38 106 Z" fill="white" opacity="0.95"/>
+  <!-- Folded corner -->
+  <path d="M82 22 L82 38 L98 38 Z" fill="white" opacity="0.6"/>
+  
+  <!-- Text lines on document -->
+  <rect x="48" y="48" width="40" height="4" rx="2" fill="#0a7a5e" opacity="0.35"/>
+  <rect x="48" y="58" width="32" height="4" rx="2" fill="#0a7a5e" opacity="0.35"/>
+  <rect x="48" y="68" width="36" height="4" rx="2" fill="#0a7a5e" opacity="0.35"/>
+  
+  <!-- Citation superscript badge -->
+  <circle cx="96" cy="84" r="18" fill="#FF6B35" />
+  <text x="96" y="91" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="white">^</text>
+  
+  <!-- Small link/chain icon inside document bottom area -->
+  <g transform="translate(56, 80)" opacity="0.5">
+    <path d="M0 8 C0 4, 4 0, 8 0 L12 0" stroke="#0a7a5e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M6 12 L10 12 C14 12, 18 8, 18 4" stroke="#0a7a5e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
